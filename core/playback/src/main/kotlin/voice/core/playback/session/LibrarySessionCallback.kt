@@ -34,7 +34,7 @@ import voice.core.playback.session.search.BookSearchHandler
 import voice.core.playback.session.search.BookSearchParser
 
 @Inject
-class LibrarySessionCallback(
+open class LibrarySessionCallback(
   private val mediaItemProvider: MediaItemProvider,
   private val scope: CoroutineScope,
   private val player: VoicePlayer,

@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @Inject
-class VoicePlayer(
+open class VoicePlayer(
   private val player: Player,
   private val repo: BookRepository,
   @CurrentBookStore

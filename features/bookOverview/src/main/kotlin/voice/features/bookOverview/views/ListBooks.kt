@@ -112,6 +112,7 @@ internal fun ListBookRow(
               .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
               .align(Alignment.CenterVertically),
           ) {
+            SandreasSeriesLine(book.series, book.part)
             if (book.author != null) {
               Text(
                 text = book.author.toUpperCase(LocaleList.current),
@@ -152,5 +153,22 @@ private fun CoverImage(cover: ImmutableFile?) {
     placeholder = painterResource(id = UiR.drawable.album_art),
     error = painterResource(id = UiR.drawable.album_art),
     contentDescription = null,
+  )
+}
+
+@Composable
+private fun SandreasSeriesLine(series: String?, part: String?) {
+  val seriesLine = listOf(series, "#${part ?: ""}".trim().trimEnd('#')).filter { it -> !it.isNullOrBlank() }.joinToString(" ").trim()
+  if(seriesLine.isEmpty()) {
+    return
+  }
+  Text(
+    text =  if(seriesLine.length > 40) {
+      seriesLine.substring(0,18) + "..." + seriesLine.substring(seriesLine.length - 18)
+    } else {
+      seriesLine
+    },
+    style = MaterialTheme.typography.labelSmall,
+    maxLines = 1
   )
 }

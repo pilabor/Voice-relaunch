@@ -24,6 +24,7 @@ import voice.core.data.Chapter
 import voice.core.logging.core.Logger
 import voice.core.playback.session.MediaId
 import voice.core.playback.session.toMediaIdOrNull
+import voice.core.sleeptimer.SleepTimer
 import kotlin.math.min
 import kotlin.math.max
 import kotlin.time.Duration
@@ -32,19 +33,20 @@ import kotlin.time.Duration.Companion.seconds
 
 @Inject
 class SandreasVoicePlayer(
-                          private val player: Player,
-                          private val repo: BookRepository,
-                          @CurrentBookStore
+  private val player: Player,
+  private val repo: BookRepository,
+  @CurrentBookStore
                           private val currentBookStoreId: DataStore<BookId?>,
-                          @SeekTimeStore
+  @SeekTimeStore
                           private val seekTimeStore: DataStore<Int>,
-                          @AutoRewindAmountStore
+  @AutoRewindAmountStore
                           private val autoRewindAmountStore: DataStore<Int>,
-                          private val mediaItemProvider: MediaItemProvider,
-                          private val scope: CoroutineScope,
-                          private val chapterRepo: ChapterRepo,
-                          private val volumeGain: VolumeGain,
-)  : VoicePlayer(player, repo, currentBookStoreId, seekTimeStore, autoRewindAmountStore, mediaItemProvider, scope, chapterRepo, volumeGain) {
+  private val mediaItemProvider: MediaItemProvider,
+  private val scope: CoroutineScope,
+  private val chapterRepo: ChapterRepo,
+  private val volumeGain: VolumeGain,
+  private val sleepTimer: SleepTimer,
+)  : VoicePlayer(player, repo, currentBookStoreId, seekTimeStore, autoRewindAmountStore, mediaItemProvider, scope, chapterRepo, volumeGain, sleepTimer,) {
 
   private val THRESHOLD_FOR_BACK_SEEK_MS = 3000
 

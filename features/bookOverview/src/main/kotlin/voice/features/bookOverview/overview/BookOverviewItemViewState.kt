@@ -15,6 +15,9 @@ data class BookOverviewItemViewState(
   val progress: Float,
   val id: BookId,
   val remainingTime: String,
+  // sandreas: added two properties
+  val series: String? = null,
+  val part: String? = null
 )
 
 internal fun Book.toItemViewState() = BookOverviewItemViewState(
@@ -24,6 +27,9 @@ internal fun Book.toItemViewState() = BookOverviewItemViewState(
   id = id,
   progress = progress(),
   remainingTime = DateUtils.formatElapsedTime((duration - position) / 1000),
+  // sandreas: added two properties
+  series = content.series,
+  part = content.part,
 )
 
 private fun Book.progress(): Float {

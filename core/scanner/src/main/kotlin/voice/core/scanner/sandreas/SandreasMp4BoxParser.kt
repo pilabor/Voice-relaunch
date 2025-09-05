@@ -6,7 +6,6 @@ import androidx.media3.container.Mp4Box
 import androidx.media3.extractor.ExtractorInput
 import dev.zacsweers.metro.Inject
 import voice.core.logging.core.Logger
-import voice.core.scanner.Metadata
 import voice.core.scanner.mp4.Mp4ChpaterExtractorOutput
 import voice.core.scanner.mp4.visitor.ChapVisitor
 import voice.core.scanner.mp4.visitor.ChplVisitor
@@ -26,9 +25,6 @@ internal class SandreasMp4BoxParser(
   chapVisitor: ChapVisitor,
   sandreasMetaVisitor: SandreasMetaVisitor
 ) {
-
-
-
   private val visitors = listOf(
     stscVisitor,
     mdhdVisitor,
@@ -98,7 +94,7 @@ internal class SandreasMp4BoxParser(
           visitor.visit(scratch, parseOutput)
 
           if (parseOutput.chplChapters.isNotEmpty()) {
-            return
+            continue
           }
         }
 
@@ -112,7 +108,7 @@ internal class SandreasMp4BoxParser(
           )
 
           if (parseOutput.chplChapters.isNotEmpty()) {
-            return
+            continue
           }
         }
 

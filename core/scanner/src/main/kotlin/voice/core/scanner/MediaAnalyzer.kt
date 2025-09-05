@@ -24,7 +24,6 @@ import voice.core.logging.core.Logger
 import voice.core.scanner.matroska.MatroskaMetaDataExtractor
 import voice.core.scanner.matroska.MatroskaParseException
 import voice.core.scanner.mp4.Mp4ChapterExtractor
-import voice.core.scanner.sandreas.SandreasMp4BoxParser
 import voice.core.scanner.sandreas.visitor.SandreasMetaVisitor
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration

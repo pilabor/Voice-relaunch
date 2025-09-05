@@ -11,13 +11,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import voice.core.data.MarkData
 import voice.core.logging.core.Logger
-import voice.core.scanner.sandreas.SandreasMp4BoxParser
 import java.io.IOException
 
 @Inject
 internal class Mp4ChapterExtractor(
   private val context: Context,
-  private val boxParser: SandreasMp4BoxParser,
+  private val boxParser: Mp4BoxParser,
   private val chapterTrackProcessor: ChapterTrackProcessor,
 ) {
 

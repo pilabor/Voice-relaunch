@@ -11,6 +11,7 @@ import voice.core.scanner.mp4.visitor.MdhdVisitor
 import voice.core.scanner.mp4.visitor.StcoVisitor
 import voice.core.scanner.mp4.visitor.StscVisitor
 import voice.core.scanner.mp4.visitor.SttsVisitor
+import voice.core.scanner.sandreas.visitor.SandreasMetaVisitor
 
 @Inject
 internal class Mp4BoxParser(
@@ -20,6 +21,7 @@ internal class Mp4BoxParser(
   stcoVisitor: StcoVisitor,
   chplVisitor: ChplVisitor,
   chapVisitor: ChapVisitor,
+  sandreasMetaVisitor: SandreasMetaVisitor
 ) {
 
   private val visitors = listOf(
@@ -29,6 +31,7 @@ internal class Mp4BoxParser(
     stcoVisitor,
     chplVisitor,
     chapVisitor,
+    sandreasMetaVisitor
   )
   private val visitorByPath = visitors.associateBy { it.path }
 
@@ -90,7 +93,8 @@ internal class Mp4BoxParser(
           visitor.visit(scratch, parseOutput)
 
           if (parseOutput.chplChapters.isNotEmpty()) {
-            return
+            // sandreas return => continue
+            continue
           }
         }
 
@@ -104,7 +108,8 @@ internal class Mp4BoxParser(
           )
 
           if (parseOutput.chplChapters.isNotEmpty()) {
-            return
+            // sandreas return => continue
+            continue
           }
         }
 

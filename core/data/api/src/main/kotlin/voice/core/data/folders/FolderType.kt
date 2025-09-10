@@ -5,4 +5,5 @@ public enum class FolderType {
   SingleFolder,
   Root,
   Author,
+  Auto,
 }

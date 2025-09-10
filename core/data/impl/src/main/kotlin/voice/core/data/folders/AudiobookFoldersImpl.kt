@@ -55,6 +55,7 @@ internal constructor(
       FolderType.SingleFolder,
       FolderType.Root,
       FolderType.Author,
+      FolderType.Auto,
       -> {
         DocumentsContract.buildDocumentUriUsingTree(
           this,
@@ -105,6 +106,7 @@ internal constructor(
       FolderType.SingleFolder -> singleFolderAudiobookFoldersStore
       FolderType.Root -> rootAudioBookFoldersStore
       FolderType.Author -> authorAudiobookFoldersStore
+      FolderType.Auto -> rootAudioBookFoldersStore
     }
   }
 

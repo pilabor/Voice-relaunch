@@ -157,6 +157,34 @@ class MediaScannerTest {
       BookContentView(folder, chapters = listOf(book)),
     )
   }
+  @Test
+  fun scanAuto() = test {
+    val audiobookFolder = folder("audiobooks1")
+
+    val topFileBook = audioFile(parent = audiobookFolder, "test.mp3")
+
+    val book1 = File(audiobookFolder, "book1")
+    val book1Files = listOf(
+      audioFile(book1, "1.mp3"),
+      audioFile(book1, "2.mp3"),
+      audioFile(book1, "10.mp3"),
+    )
+
+    val book2 = File(audiobookFolder, "book2")
+    val book2Files = listOf(
+      audioFile(book2, "1.mp3"),
+      audioFile(book2, "2.mp3"),
+      audioFile(book2, "10.mp3"),
+    )
+
+    scan(FolderType.Auto, audiobookFolder)
+
+    assertBookContents(
+      BookContentView(topFileBook, chapters = listOf(topFileBook)),
+      BookContentView(book1, chapters = book1Files),
+      BookContentView(book2, chapters = book2Files),
+    )
+  }
 
   @Test
   fun scanAuthor() = test {
@@ -196,6 +224,12 @@ class MediaScannerTest {
     val bookContentRepo = BookContentRepoImpl(db.bookContentDao())
     private val chapterRepo = ChapterRepoImpl(db.chapterDao())
     private val mediaAnalyzer = mockk<MediaAnalyzer>()
+
+
+    val bookRepo = BookRepositoryImpl(chapterRepo, bookContentRepo)
+
+    private val root: File = Files.createTempDirectory(this::class.java.canonicalName!!).toFile()
+
     private val scanner = MediaScanner(
       contentRepo = bookContentRepo,
       chapterParser = ChapterParser(
@@ -208,11 +242,8 @@ class MediaScannerTest {
         fileFactory = FileBasedDocumentFactory,
       ),
       deviceHasPermissionBug = mockk(),
+      autoScanner = AutoMediaScanner(),
     )
-
-    val bookRepo = BookRepositoryImpl(chapterRepo, bookContentRepo)
-
-    private val root: File = Files.createTempDirectory(this::class.java.canonicalName!!).toFile()
 
     suspend fun scan(
       type: FolderType = FolderType.Root,
@@ -224,7 +255,20 @@ class MediaScannerTest {
     fun audioFile(
       parent: File,
       name: String,
+      meta: Metadata? = null
     ): File {
+      val metaData = meta ?: Metadata(
+        duration = 1000L,
+        artist = "Author",
+        album = "Book Name",
+        fileName = "Chapter",
+        chapters = emptyList(),
+        title = "Title",
+        genre = "Genre",
+        narrator = "Narrator",
+        series = "Series",
+        part = "Part",
+      )
       check(name.endsWith(".mp3"))
       return File(parent, name)
         .also {
@@ -233,18 +277,7 @@ class MediaScannerTest {
         }
         .also {
           coEvery { mediaAnalyzer.analyze(any()) } coAnswers {
-            Metadata(
-              duration = 1000L,
-              artist = "Author",
-              album = "Book Name",
-              fileName = "Chapter",
-              chapters = emptyList(),
-              title = "Title",
-              genre = "Genre",
-              narrator = "Narrator",
-              series = "Series",
-              part = "Part",
-            )
+            metaData
           }
         }
     }

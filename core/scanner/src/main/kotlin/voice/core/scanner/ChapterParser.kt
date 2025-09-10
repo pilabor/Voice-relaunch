@@ -15,14 +15,14 @@ internal class ChapterParser(
   private val mediaAnalyzer: MediaAnalyzer,
 ) {
 
-  suspend fun parse(documentFile: CachedDocumentFile): List<Chapter> {
+  suspend fun parse(documentFile: CachedDocumentFile, existingMetadata: Metadata? = null): List<Chapter> {
     val result = mutableListOf<Chapter>()
 
-    suspend fun parseChapters(file: CachedDocumentFile) {
+    suspend fun parseChapters(file: CachedDocumentFile, existingMetadata: Metadata? = null) {
       if (file.isAudioFile()) {
         val id = ChapterId(file.uri)
         val chapter = chapterRepo.getOrPut(id, Instant.ofEpochMilli(file.lastModified)) {
-          val metaData = mediaAnalyzer.analyze(file) ?: return@getOrPut null
+          val metaData = existingMetadata ?: mediaAnalyzer.analyze(file) ?: return@getOrPut null
           Chapter(
             id = id,
             duration = metaData.duration,
@@ -42,7 +42,7 @@ internal class ChapterParser(
       }
     }
 
-    parseChapters(file = documentFile)
+    parseChapters(file = documentFile, existingMetadata = existingMetadata)
     return result.sorted()
   }
 }

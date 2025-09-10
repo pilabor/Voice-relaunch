@@ -46,6 +46,7 @@ internal constructor(
       _scannerActive.value = true
       oldJob?.cancelAndJoin()
 
+      // sandreas: here is the magic
       measureTime {
         val folders: Map<FolderType, List<CachedDocumentFile>> = audiobookFolders.all()
           .first()

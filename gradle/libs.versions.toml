@@ -1,7 +1,4 @@
 [versions]
-versionCode = "3603049"
-versionName = "8.6.2"
-
 sdk-compile = "36"
 sdk-min = "28"
 sdk-target = "36"
@@ -34,7 +31,7 @@ androidxCore = "androidx.core:core-ktx:1.17.0"
 kotlin-pluginForGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
 documentFile = "androidx.documentfile:documentfile:1.1.0"
-koTest-assert = "io.kotest:kotest-assertions-core:6.0.2"
+koTest-assert = "io.kotest:kotest-assertions-core:6.0.3"
 datastore = "androidx.datastore:datastore-preferences:1.1.7"
 seismic = "com.squareup:seismic:1.0.3"
 turbine = "app.cash.turbine:turbine:1.2.1"
@@ -147,5 +144,4 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version = "2.2.10-2.0.2" }
 ktlint = { id = "io.github.usefulness.ktlint-gradle-plugin", version.ref = "ktlint-gradlePlugin" }
-playPublish = { id = "com.github.triplet.play", version = "3.12.1" }
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }

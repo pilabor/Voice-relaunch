@@ -5,14 +5,15 @@ sdk-target = "36"
 sdk-robolectric = "35"
 
 coroutines = "1.10.2"
-room = "2.7.2"
-kotlin = "2.2.10"
+room = "2.8.0"
+kotlin = "2.2.20"
 media3 = "1.8.0"
 agp = "8.13.0"
 ktlint-core = "1.7.1"
 ktlint-gradlePlugin = "0.11.0"
 retrofit = "3.0.0"
-metro = "0.6.4"
+metro = "0.6.6"
+navigation3 = "1.0.0-alpha09"
 
 [libraries]
 androidPluginForGradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -76,7 +77,7 @@ media3-testUtils-robolectric = { module = "androidx.media3:media3-test-utils-rob
 lifecycle = "androidx.lifecycle:lifecycle-runtime-ktx:2.9.3"
 lifecycle-viewmodel-compose = "androidx.lifecycle:lifecycle-viewmodel-compose:2.9.3"
 
-compose-bom = "androidx.compose:compose-bom:2025.08.01"
+compose-bom = "androidx.compose:compose-bom:2025.09.00"
 compose-ui-ui = { module = "androidx.compose.ui:ui" }
 compose-ui-tooling-core = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
@@ -90,9 +91,9 @@ compose-material-icons-extended = { module = "androidx.compose.material:material
 compose-animation-graphics = { module = "androidx.compose.animation:animation-graphics" }
 compose-animation-animation = { module = "androidx.compose.animation:animation" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
-compose-activity = "androidx.activity:activity-compose:1.10.1"
-navigation3-ui = "androidx.navigation3:navigation3-ui:1.0.0-alpha08"
-navigation3-runtime = "androidx.navigation3:navigation3-runtime:1.0.0-alpha08"
+compose-activity = "androidx.activity:activity-compose:1.11.0"
+navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 
 metro-runtime = { module = "dev.zacsweers.metro:runtime", version.ref = "metro" }
 
@@ -142,6 +143,6 @@ googleServices = { id = "com.google.gms.google-services", version = "4.4.3" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version = "2.2.10-2.0.2" }
+ksp = { id = "com.google.devtools.ksp", version = "2.2.20-2.0.2" }
 ktlint = { id = "io.github.usefulness.ktlint-gradle-plugin", version.ref = "ktlint-gradlePlugin" }
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }

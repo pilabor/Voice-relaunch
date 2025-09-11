@@ -24,11 +24,12 @@ internal class BookParser(
   suspend fun parseAndStore(
     chapters: List<Chapter>,
     file: CachedDocumentFile,
+    metadata: Metadata? = null
   ): BookContent {
     val id = BookId(file.uri)
     return contentRepo.getOrPut(id) {
       val uri = chapters.first().id.toUri()
-      val analyzed = mediaAnalyzer.analyze(fileFactory.create(uri))
+      val analyzed = metadata ?: mediaAnalyzer.analyze(fileFactory.create(uri))
       BookContent(
         id = id,
         isActive = true,

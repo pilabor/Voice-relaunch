@@ -162,7 +162,7 @@ class MediaScannerTest {
   @Test
   fun scanAuto() = test {
     val audiobookFolder = folder("audiobooks1")
-/*
+
     val topFileBook = audioFile(parent = audiobookFolder, "test.mp3")
 
     val book1 = File(audiobookFolder, "book1")
@@ -178,7 +178,7 @@ class MediaScannerTest {
       audioFile(book2, "2.mp3"),
       audioFile(book2, "10.mp3"),
     )
-*/
+
     val series1 = File(audiobookFolder, "series1")
     val series1Files = listOf(
       audioFile(series1, "1 - part1.m4b", null, listOf(MarkData(0, "Intro"), MarkData(5000, "Chapter 1"))),

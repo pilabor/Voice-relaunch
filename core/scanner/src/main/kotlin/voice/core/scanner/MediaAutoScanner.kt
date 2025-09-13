@@ -13,7 +13,13 @@ import kotlinx.coroutines.channels.produce
 import voice.core.documentfile.CachedDocumentFile
 import voice.core.documentfile.walkBottomUp
 import java.util.EnumSet
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import kotlin.time.Duration.Companion.hours
+
+// scan directory - send directory packages
+// consume directory packages - send
+
 
 internal data class CustomCachedDocumentFile(
   override val children: List<CachedDocumentFile>,
@@ -25,15 +31,17 @@ internal data class CustomCachedDocumentFile(
   override val uri: Uri
 ) : CachedDocumentFile
 
+/*
 internal enum class AutoScannerStages
 {
   Initialized,
   DirectoryScanCompleted,
   MetadataLoaded,
 }
+*/
 
-internal class DirectoryPackage(val uri: Uri, val files: List<MetadataFile>)
-
+internal class DirectoryPackage(val parentDirectory: CachedDocumentFile?, val files: List<CachedDocumentFile>)
+/*
 internal class MetadataFile(val parent:Uri, val file: CachedDocumentFile, var metadata: Metadata?=null) {
   private val extension: String = (file.name ?: "").substringAfterLast(delimiter = ".", missingDelimiterValue = "").lowercase()
 
@@ -49,6 +57,7 @@ internal class MetadataFile(val parent:Uri, val file: CachedDocumentFile, var me
     return !isAudioBook()
   }
 }
+*/
 
 @Inject
 internal class MediaAutoScanner(
@@ -60,6 +69,9 @@ internal class MediaAutoScanner(
   private var ioScope = CoroutineScope(Dispatchers.IO)
   private var directoryPackageChannel: ReceiveChannel<DirectoryPackage> = Channel(capacity = 50)
   private var metadataLoadedChannel: ReceiveChannel<DirectoryPackage> = Channel()
+
+
+  private var metadataRepo: ConcurrentMap<Uri, Metadata?> = ConcurrentHashMap<Uri, Metadata?>()
 
   fun getParentUri(uri:Uri): Uri? {
     when(uri.scheme) {
@@ -88,6 +100,21 @@ internal class MediaAutoScanner(
     }
     return null
   }
+
+  fun isAudioBook(file: CachedDocumentFile): Boolean {
+    if(file.uri.toString().endsWith("m4b")) {
+      return true
+    }
+    val metadata = metadataRepo[file.uri]
+    if(metadata == null) {
+      return false
+    }
+    if(metadata.chapters.size < 5 || metadata.duration <  2.hours.inWholeMilliseconds) {
+      return false
+    }
+    return true
+  }
+
   suspend fun scanRoot(files: List<CachedDocumentFile>) {
     // first we scan the directory recursively for files
     // producer / consumer
@@ -97,24 +124,21 @@ internal class MediaAutoScanner(
           // root subdirectories are scanned recursively
           // files are organized in DirectoryPackages to handle books that consist of multiple mp3 files as well as directories
           // containing one book per file
-          val currentDirectoryFiles = mutableListOf<MetadataFile>()
+          val currentDirectoryFiles = mutableListOf<CachedDocumentFile>()
           rootFile.walkBottomUp().forEach { it ->
             // the bottomUp approach allows us to submit a finished DirectoryPackage soon as "it" is a directory
             if (it.isDirectory) {
-              send(DirectoryPackage(it.uri, currentDirectoryFiles))
-              currentDirectoryFiles.clear()
+              if(currentDirectoryFiles.isNotEmpty()) {
+                send(DirectoryPackage(it, currentDirectoryFiles))
+                currentDirectoryFiles.clear()
+              }
             } else {
-              currentDirectoryFiles.add(MetadataFile(rootFile.uri, it))
+              currentDirectoryFiles.add(it)
             }
           }
         } else {
-          // root files are submitted as single audio file DirectoryPackage immediately
-          val parentUri = getParentUri(rootFile.uri);
-          if(parentUri != null) {
-            val meta = MetadataFile(parentUri, rootFile)
-            meta.completedStages.add(AutoScannerStages.DirectoryScanCompleted)
-            send(DirectoryPackage(rootFile.uri, listOf(meta)))
-          }
+          // root files are submitted as single audio file with empty parent DirectoryPackage immediately
+          send(DirectoryPackage(null, listOf(rootFile)))
         }
       }
     }
@@ -124,9 +148,8 @@ internal class MediaAutoScanner(
       // 2 threads to analyse metadata faster (just as an example what we could do, maybe it is not even better performance)
       repeat(2) {
         directoryPackageChannel.consumeEach { it ->
-          val copy = DirectoryPackage(it.uri, it.files.toList())
-          for(metadataFile in copy.files) {
-            metadataFile.metadata = mediaAnalyzer.analyze(metadataFile.file)
+          for(metadataFile in it.files) {
+            metadataRepo.put(metadataFile.uri, mediaAnalyzer.analyze(metadataFile))
           }
           // put the finished directoryPackage into the metadataLoadedChannel
           send(it)
@@ -134,35 +157,43 @@ internal class MediaAutoScanner(
       }
     }
 
-    metadataLoadedChannel.consumeEach { it ->
+    metadataLoadedChannel.consumeEach { dp ->
+      if(dp.files.isEmpty()) {
+        // this should never happen
+        return
+      }
+
       // single file package without audio book properties (e.g. files in root directory)
-      if(it.files.size == 1) {
-        val firstFile = it.files.first()
-        val chapters = chapterParser.parse(firstFile.file, firstFile.metadata)
-        bookParser.parseAndStore(chapters, firstFile.file, firstFile.metadata)
+      if(dp.files.size == 1) {
+        val file = dp.files.first()
+        val chapters = chapterParser.parse(file, metadataRepo)
+        bookParser.parseAndStore(chapters, file, metadataRepo[file.uri])
       }
 
       // single file audio books (e.g. m4b or stik=2)
-      it.files.filter { it -> it.isAudioBook()}.forEach {it ->
-        val chapters = chapterParser.parse(it.file, it.metadata)
-        bookParser.parseAndStore(chapters, it.file, it.metadata)
+      dp.files.filter { file -> isAudioBook(file)}.forEach {file ->
+        val chapters = chapterParser.parse(file, metadataRepo)
+        bookParser.parseAndStore(chapters, file, metadataRepo[file.uri])
       }
 
 
+      val dpUri = dp.parentDirectory?.uri ?: getParentFileUri(dp.files.first().uri)
+      if(dpUri == null) {
+        return
+      }
       // multi-file audio books
       val multiFileBook = CustomCachedDocumentFile(
-        children = it.files.filter { f -> f.isChapter() }.map { f -> f.file },
-        name = it.uri.toFile().name,
+        // directories may contain mixed contents (e.g. a-full-book.m4b, chapter1.mp3, chapter2.mp3, chapter3.mp3, ...)
+        children = dp.files.filter { f -> !isAudioBook(f) },
+        name = dp.parentDirectory?.name,
         isDirectory = true,
         isFile = false,
-        length = it.files.sumOf { f -> f.file.length },
+        length = dp.files.sumOf { f -> f.length },
         lastModified = 0, // it.files.maxOf { f -> f.file.lastModified } ?: 0,
-        uri = it.uri
+        uri = dpUri
       )
 
-      // todo:
-      // problem: This is gonna re-retrieve the metadata by folder when used with bookParser
-      var chapters = chapterParser.parse(multiFileBook)
+      val chapters = chapterParser.parse(multiFileBook, metadataRepo)
       bookParser.parseAndStore(chapters, multiFileBook)
     }
   }

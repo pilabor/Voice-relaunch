@@ -1,5 +1,6 @@
 package voice.core.scanner
 
+import android.net.Uri
 import dev.zacsweers.metro.Inject
 import voice.core.data.Chapter
 import voice.core.data.ChapterId
@@ -8,6 +9,8 @@ import voice.core.data.repo.ChapterRepo
 import voice.core.data.repo.getOrPut
 import voice.core.documentfile.CachedDocumentFile
 import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 
 @Inject
 internal class ChapterParser(
@@ -15,14 +18,14 @@ internal class ChapterParser(
   private val mediaAnalyzer: MediaAnalyzer,
 ) {
 
-  suspend fun parse(documentFile: CachedDocumentFile, existingMetadata: Metadata? = null): List<Chapter> {
+  suspend fun parse(documentFile: CachedDocumentFile, metadataLookup: ConcurrentMap<Uri, Metadata?> = ConcurrentHashMap()): List<Chapter> {
     val result = mutableListOf<Chapter>()
 
-    suspend fun parseChapters(file: CachedDocumentFile, existingMetadata: Metadata? = null) {
+    suspend fun parseChapters(file: CachedDocumentFile, metadataLookup: ConcurrentMap<Uri, Metadata?> = ConcurrentHashMap()) {
       if (file.isAudioFile()) {
         val id = ChapterId(file.uri)
         val chapter = chapterRepo.getOrPut(id, Instant.ofEpochMilli(file.lastModified)) {
-          val metaData = existingMetadata ?: mediaAnalyzer.analyze(file) ?: return@getOrPut null
+          val metaData = metadataLookup[file.uri] ?: mediaAnalyzer.analyze(file) ?: return@getOrPut null
           Chapter(
             id = id,
             duration = metaData.duration,
@@ -42,7 +45,7 @@ internal class ChapterParser(
       }
     }
 
-    parseChapters(file = documentFile, existingMetadata = existingMetadata)
+    parseChapters(file = documentFile, metadataLookup = metadataLookup)
     return result.sorted()
   }
 }

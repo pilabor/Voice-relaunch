@@ -179,22 +179,28 @@ class MediaScannerTest {
       audioFile(book2, "10.mp3"),
     )
 
+
     val series1 = File(audiobookFolder, "series1")
+    val part1marks = listOf(MarkData(0, "Part 1 - Intro"), MarkData(5000, "Chapter 1"))
+    val part1audio = audioFile(series1, "1 - part1.m4b", null, part1marks)
+    val part2marks = listOf(MarkData(0, "Part 2 - Intro"), MarkData(5000, "Chapter 1"))
+    val part2audio = audioFile(series1, "2 - part2.m4b", null, part2marks)
     val series1Files = listOf(
-      audioFile(series1, "1 - part1.m4b", null, listOf(MarkData(0, "Intro"), MarkData(5000, "Chapter 1"))),
-      audioFile(series1, "2 - part2.m4b", null, listOf(MarkData(0, "Intro"), MarkData(5000, "Chapter 1"))),
+      part1audio,
+      part2audio,
     )
 
     scan(FolderType.Auto, audiobookFolder)
 
-    /*
+
     assertBookContents(
       BookContentView(topFileBook, chapters = listOf(topFileBook)),
       BookContentView(book1, chapters = book1Files),
       BookContentView(book2, chapters = book2Files),
-    )
-
-     */
+      // chapters are limited to File Datatype - here real chapters should be tested
+      BookContentView(part1audio, chapters = listOf(part1audio)),
+      BookContentView(part2audio, chapters = listOf(part2audio)),
+      )
   }
 
   @Test

@@ -39,8 +39,8 @@ internal class MediaScanner(
     val files = folders.flatMap { (folderType, files) ->
       when (folderType) {
         FolderType.Auto -> {
+          // metadata is not reused, but gathered again later in the process
           autoScanner.scanRoot(files)
-          emptyList()
         }
         FolderType.SingleFile, FolderType.SingleFolder -> {
           files

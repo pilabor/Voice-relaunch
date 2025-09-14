@@ -87,5 +87,4 @@ open class PlaybackModule {
       .setSessionActivity(mainActivityIntentProvider.toCurrentBook())
       .build()
   }
-
 }

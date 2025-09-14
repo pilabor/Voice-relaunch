@@ -21,7 +21,7 @@ internal class Mp4BoxParser(
   stcoVisitor: StcoVisitor,
   chplVisitor: ChplVisitor,
   chapVisitor: ChapVisitor,
-  sandreasMetaVisitor: SandreasMetaVisitor
+  sandreasMetaVisitor: SandreasMetaVisitor,
 ) {
 
   private val visitors = listOf(
@@ -31,7 +31,7 @@ internal class Mp4BoxParser(
     stcoVisitor,
     chplVisitor,
     chapVisitor,
-    sandreasMetaVisitor
+    sandreasMetaVisitor,
   )
   private val visitorByPath = visitors.associateBy { it.path }
 

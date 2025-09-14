@@ -6,29 +6,29 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import voice.core.data.BookId
+import voice.core.data.Chapter
 import voice.core.data.repo.BookRepository
 import voice.core.data.repo.ChapterRepo
 import voice.core.data.store.AutoRewindAmountStore
 import voice.core.data.store.CurrentBookStore
 import voice.core.data.store.SeekTimeStore
+import voice.core.logging.api.Logger
 import voice.core.playback.misc.VolumeGain
 import voice.core.playback.player.VoicePlayer
-import voice.core.playback.session.MediaItemProvider
-import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import voice.core.data.Chapter
-import voice.core.logging.core.Logger
 import voice.core.playback.session.MediaId
+import voice.core.playback.session.MediaItemProvider
 import voice.core.playback.session.toMediaIdOrNull
 import voice.core.sleeptimer.SleepTimer
-import kotlin.math.min
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.ZERO
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @Inject
@@ -36,22 +36,22 @@ class SandreasVoicePlayer(
   private val player: Player,
   private val repo: BookRepository,
   @CurrentBookStore
-                          private val currentBookStoreId: DataStore<BookId?>,
+  private val currentBookStoreId: DataStore<BookId?>,
   @SeekTimeStore
-                          private val seekTimeStore: DataStore<Int>,
+  private val seekTimeStore: DataStore<Int>,
   @AutoRewindAmountStore
-                          private val autoRewindAmountStore: DataStore<Int>,
+  private val autoRewindAmountStore: DataStore<Int>,
   private val mediaItemProvider: MediaItemProvider,
   private val scope: CoroutineScope,
   private val chapterRepo: ChapterRepo,
   private val volumeGain: VolumeGain,
   private val sleepTimer: SleepTimer,
-)  : VoicePlayer(player, repo, currentBookStoreId, seekTimeStore, autoRewindAmountStore, mediaItemProvider, scope, chapterRepo, volumeGain, sleepTimer,) {
+) : VoicePlayer(player, repo, currentBookStoreId, seekTimeStore, autoRewindAmountStore, mediaItemProvider, scope, chapterRepo, volumeGain, sleepTimer) {
 
   private val THRESHOLD_FOR_BACK_SEEK_MS = 3000
 
   val seekPlayBufferTime = 850.milliseconds
-  var seekJob : Job? = null
+  var seekJob: Job? = null
   var isSeeking = false
 
   private fun cancelSeekJob() {
@@ -73,7 +73,7 @@ class SandreasVoicePlayer(
     return chapterRepo.get(mediaId.chapterId)
   }
 
-  fun forceSeekToNext(maxOffset: Duration=0.milliseconds) {
+  fun forceSeekToNext(maxOffset: Duration = 0.milliseconds) {
     cancelSeekJob()
     scope.launch {
       val currentMediaItem = player.currentMediaItem ?: return@launch
@@ -83,7 +83,13 @@ class SandreasVoicePlayer(
       }
       val nextMark = marks.getOrNull(currentMarkIndex + 1)
       if (nextMark != null) {
-        val seekToPosition = if(maxOffset == 0.milliseconds) nextMark.startMs else min(nextMark.startMs, currentPosition + maxOffset.inWholeMilliseconds)
+        val seekToPosition = if (maxOffset ==
+          0.milliseconds
+        ) {
+          nextMark.startMs
+        } else {
+          min(nextMark.startMs, currentPosition + maxOffset.inWholeMilliseconds)
+        }
         Logger.d("theseeker: seekToPosition=$seekToPosition / nextMark.startMs=$nextMark.startMs")
         player.seekTo(seekToPosition)
       } else {
@@ -103,14 +109,26 @@ class SandreasVoicePlayer(
       } ?: marks.last()
 
       if (currentPosition - currentMark.startMs > THRESHOLD_FOR_BACK_SEEK_MS) {
-        val seekToPosition = if(maxOffset <= 0.milliseconds) currentMark.startMs else max(currentMark.startMs, currentPosition - maxOffset.inWholeMilliseconds)
+        val seekToPosition = if (maxOffset <=
+          0.milliseconds
+        ) {
+          currentMark.startMs
+        } else {
+          max(currentMark.startMs, currentPosition - maxOffset.inWholeMilliseconds)
+        }
         Logger.d("theseeker-prev: seekToPosition=$seekToPosition / currentMark.startMs=$currentMark.startMs")
         player.seekTo(seekToPosition)
       } else {
         val currentMarkIndex = marks.indexOf(currentMark)
         val previousMark = marks.getOrNull(currentMarkIndex - 1)
         if (previousMark != null) {
-          val seekToPosition = if(maxOffset <= 0.milliseconds) previousMark.startMs else max(previousMark.startMs, currentPosition - maxOffset.inWholeMilliseconds)
+          val seekToPosition = if (maxOffset <=
+            0.milliseconds
+          ) {
+            previousMark.startMs
+          } else {
+            max(previousMark.startMs, currentPosition - maxOffset.inWholeMilliseconds)
+          }
           Logger.d("theseeker-prev: seekToPosition=$seekToPosition / previousMark.startMs=$previousMark.startMs")
           player.seekTo(seekToPosition)
         } else {
@@ -127,7 +145,13 @@ class SandreasVoicePlayer(
             val maxOffsetRemaining = maxOffset - played.milliseconds
             val normalizedOffset = lastPreviousMediaItemMark.endMs - maxOffsetRemaining.inWholeMilliseconds
             Logger.d("theseeker-prev: played=$played, maxOffsetRemaining=$maxOffsetRemaining, rest: $normalizedOffset")
-            val seekToPosition = if(maxOffset <= 0.milliseconds) lastPreviousMediaItemMark.startMs else max(lastPreviousMediaItemMark.startMs, normalizedOffset)
+            val seekToPosition = if (maxOffset <=
+              0.milliseconds
+            ) {
+              lastPreviousMediaItemMark.startMs
+            } else {
+              max(lastPreviousMediaItemMark.startMs, normalizedOffset)
+            }
 
             player.seekTo(previousMediaItemIndex, seekToPosition)
           } else {
@@ -210,13 +234,13 @@ class SandreasVoicePlayer(
         ?.milliseconds
         ?: return@launch
       val isPlaying = player.isPlaying
-      while(player.currentPosition < duration.inWholeMilliseconds) {
+      while (player.currentPosition < duration.inWholeMilliseconds) {
         seekForward(10.seconds - seekPlayBufferTime)
         playWithoutCancel()
         delay(seekPlayBufferTime)
       }
       isSeeking = false
-      if(isPlaying) {
+      if (isPlaying) {
         play()
       } else {
         pause()
@@ -229,13 +253,13 @@ class SandreasVoicePlayer(
     seekJob = scope.launch {
       isSeeking = true
       val isPlaying = player.isPlaying
-      while(player.currentPosition > 0) {
+      while (player.currentPosition > 0) {
         suspendSeekBack(10.seconds + seekPlayBufferTime)
         playWithoutCancel()
         delay(seekPlayBufferTime)
       }
       isSeeking = false
-      if(isPlaying) {
+      if (isPlaying) {
         play()
       } else {
         pause()

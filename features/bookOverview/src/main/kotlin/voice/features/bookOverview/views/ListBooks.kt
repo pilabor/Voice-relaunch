@@ -157,18 +157,21 @@ private fun CoverImage(cover: ImmutableFile?) {
 }
 
 @Composable
-private fun SandreasSeriesLine(series: String?, part: String?) {
+private fun SandreasSeriesLine(
+  series: String?,
+  part: String?,
+) {
   val seriesLine = listOf(series, "#${part ?: ""}".trim().trimEnd('#')).filter { it -> !it.isNullOrBlank() }.joinToString(" ").trim()
-  if(seriesLine.isEmpty()) {
+  if (seriesLine.isEmpty()) {
     return
   }
   Text(
-    text =  if(seriesLine.length > 40) {
-      seriesLine.substring(0,18) + "..." + seriesLine.substring(seriesLine.length - 18)
+    text = if (seriesLine.length > 40) {
+      seriesLine.substring(0, 18) + "..." + seriesLine.substring(seriesLine.length - 18)
     } else {
       seriesLine
     },
     style = MaterialTheme.typography.labelSmall,
-    maxLines = 1
+    maxLines = 1,
   )
 }

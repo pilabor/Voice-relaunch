@@ -17,7 +17,7 @@ data class BookOverviewItemViewState(
   val remainingTime: String,
   // sandreas: added two properties
   val series: String? = null,
-  val part: String? = null
+  val part: String? = null,
 )
 
 internal fun Book.toItemViewState() = BookOverviewItemViewState(

@@ -7,6 +7,12 @@ interface MediaButtonHandler {
   var handlerDelay: Duration
 
   fun handleKeyEvent(keyEvent: KeyEvent?): Boolean
-  fun addClickAction(clicks: Int, callback: () -> Unit)
-  fun addHoldAction(clicksBeforeHold: Int, callback: () -> Unit)
+  fun addClickAction(
+    clicks: Int,
+    callback: () -> Unit,
+  )
+  fun addHoldAction(
+    clicksBeforeHold: Int,
+    callback: () -> Unit,
+  )
 }

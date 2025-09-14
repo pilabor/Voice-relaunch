@@ -2,7 +2,7 @@ package voice.core.scanner.sandreas.visitor
 
 import androidx.media3.common.util.ParsableByteArray
 import dev.zacsweers.metro.Inject
-import voice.core.logging.core.Logger
+import voice.core.logging.api.Logger
 import voice.core.scanner.Metadata
 import voice.core.scanner.mp4.Mp4ChpaterExtractorOutput
 import voice.core.scanner.mp4.visitor.AtomVisitor
@@ -35,18 +35,18 @@ internal class SandreasMetaVisitor : AtomVisitor {
 
     try {
       parseAtoms(buffer, parentAtom)
-    } catch(e: Exception) {
+    } catch (e: Exception) {
       Logger.e(e, "Could not parse atoms in SandreasMetaVisitor")
     }
 
-    if(!series.isNullOrBlank()) {
+    if (!series.isNullOrBlank()) {
       metaBuilder?.series = series
     }
-    if(!part.isNullOrBlank()) {
+    if (!part.isNullOrBlank()) {
       metaBuilder?.part = part
     }
 
-    if(movementIndex != null && metaBuilder?.part == null) {
+    if (movementIndex != null && metaBuilder?.part == null) {
       metaBuilder?.part = movementIndex.toString()
     }
 
@@ -59,20 +59,22 @@ internal class SandreasMetaVisitor : AtomVisitor {
     part = null
   }
 
-  fun parseAtoms(buffer: ParsableByteArray, parentAtom: MetaAtom) {
-    while(buffer.position < parentAtom.end) {
+  fun parseAtoms(
+    buffer: ParsableByteArray,
+    parentAtom: MetaAtom,
+  ) {
+    while (buffer.position < parentAtom.end) {
       val position = buffer.position
       // we can't read beyond the buffer size
-      if(buffer.position >= buffer.data.size - 4) {
+      if (buffer.position >= buffer.data.size - 4) {
         break
       }
       val atomSize = buffer.readInt()
       val atomName = buffer.readString(4, Charsets.ISO_8859_1) // this charset is required to correctly read `©`
       val subAtom = MetaAtom(atomName, position, atomSize)
-      extractMetaDataField(buffer, parentAtom, atomSize-8)
+      extractMetaDataField(buffer, parentAtom, atomSize - 8)
 
-
-      if(atomSize > 0 && isAtomNameSupported(atomName) && subAtom.end <= parentAtom.end) {
+      if (atomSize > 0 && isAtomNameSupported(atomName) && subAtom.end <= parentAtom.end) {
         parseAtoms(buffer, subAtom)
       } else {
         buffer.position = parentAtom.end
@@ -96,10 +98,13 @@ internal class SandreasMetaVisitor : AtomVisitor {
   private fun parseDataAtomUnsignedByte(buffer: ParsableByteArray): Int {
     parseFlags(buffer)
     val value = buffer.readUnsignedByte()
-    return value;
+    return value
   }
 
-  private fun parseCustomField(buffer: ParsableByteArray, size: Int) {
+  private fun parseCustomField(
+    buffer: ParsableByteArray,
+    size: Int,
+  ) {
     // var nullBytes = buffer.readString(4)
     buffer.position += 4
     // val nameSpace = buffer.readString(size-4)
@@ -114,20 +119,22 @@ internal class SandreasMetaVisitor : AtomVisitor {
     buffer.position += 4
     parseFlags(buffer)
     val dataAtomSize = propertyValueWidth - 16; // buffer.readInt()
-    val dataAtomValue = buffer.readString(dataAtomSize )
+    val dataAtomValue = buffer.readString(dataAtomSize)
 
-    when(propertyName) {
+    when (propertyName) {
       "PART" -> part = dataAtomValue
-      "SERIES" ->  series = dataAtomValue
+      "SERIES" -> series = dataAtomValue
     }
   }
 
-  private fun parseDataAtomString(buffer: ParsableByteArray, size:Int): String? {
+  private fun parseDataAtomString(
+    buffer: ParsableByteArray,
+    size: Int,
+  ): String? {
     parseFlags(buffer)
     val value = buffer.readString(size - 8/*, Charsets.ISO_8859_1*/)
     return value
   }
-
 
   private fun parseFlags(buffer: ParsableByteArray): Int {
     val byteBuffer = ByteBuffer.allocate(4)
@@ -144,7 +151,11 @@ internal class SandreasMetaVisitor : AtomVisitor {
     return flags
   }
 
-  private fun bytesToInt(byteArray: ByteArray, offset: Int, length: Int): Int {
+  private fun bytesToInt(
+    byteArray: ByteArray,
+    offset: Int,
+    length: Int,
+  ): Int {
     val bytes = byteArray.drop(offset).take(length)
     var value = 0
     for (b in bytes) {
@@ -154,11 +165,15 @@ internal class SandreasMetaVisitor : AtomVisitor {
   }
 
   private fun isAtomNameSupported(atomName: String): Boolean {
-    return atomName.all { it -> it.isLetterOrDigit() || it == '-' || it == '©'}
+    return atomName.all { it -> it.isLetterOrDigit() || it == '-' || it == '©' }
   }
 }
 
-internal data class MetaAtom(val name:String, val position:Int, val size: Int) {
+internal data class MetaAtom(
+  val name: String,
+  val position: Int,
+  val size: Int,
+) {
   val end: Int
     get() = position + size
   val children: MutableList<MetaAtom> = mutableListOf<MetaAtom>()

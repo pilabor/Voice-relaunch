@@ -9,6 +9,7 @@ import voice.core.data.repo.BookContentRepo
 import voice.core.documentfile.CachedDocumentFile
 import voice.core.documentfile.walk
 import voice.core.logging.api.Logger
+import voice.core.scanner.sandreas.SandreasMediaAutoScanner
 
 @Inject
 internal class MediaScanner(
@@ -16,13 +17,15 @@ internal class MediaScanner(
   private val chapterParser: ChapterParser,
   private val bookParser: BookParser,
   private val deviceHasPermissionBug: DeviceHasStoragePermissionBug,
+  private val sandreasMediaAutoScanner: SandreasMediaAutoScanner,
+
 ) {
 
   suspend fun scan(folders: Map<FolderType, List<CachedDocumentFile>>) {
     val files = folders.flatMap { (folderType, files) ->
       when (folderType) {
         FolderType.SingleFile, FolderType.SingleFolder -> {
-          files
+          sandreasMediaAutoScanner.scanRoot(files) // files
         }
         FolderType.Root -> {
           files.flatMap { file ->

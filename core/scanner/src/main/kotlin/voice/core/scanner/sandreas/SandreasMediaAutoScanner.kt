@@ -12,16 +12,13 @@ import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.produce
 import voice.core.documentfile.CachedDocumentFile
 import voice.core.scanner.MediaAnalyzer
+import voice.core.scanner.Metadata
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import kotlin.time.Duration.Companion.hours
-import voice.core.scanner.Metadata
-
 
 @Inject
-internal class SandreasMediaAutoScanner(
-  private val mediaAnalyzer: MediaAnalyzer,
-) {
+internal class SandreasMediaAutoScanner(private val mediaAnalyzer: MediaAnalyzer) {
 
   private var ioScope = CoroutineScope(Dispatchers.IO)
   private var directoryPackageChannel: ReceiveChannel<SandreasDirectoryPackage> = Channel(capacity = 50)
@@ -38,21 +35,21 @@ internal class SandreasMediaAutoScanner(
   }
 
   fun getParentFileUri(uri: Uri): Uri? {
-    val path = uri.path  // "/var/log/test.mp3"
+    val path = uri.path // "/var/log/test.mp3"
     if (path != null) {
       val parentPath = path.substring(0, path.lastIndexOf('/') + 1) // "/var/log/"
-      return "${uri.scheme}://$parentPath".toUri()      // "file:///var/log/"
+      return "${uri.scheme}://$parentPath".toUri() // "file:///var/log/"
     }
     return null
   }
 
   fun getParentContentUri(uri: Uri): Uri? {
     // val uri = Uri.parse("content://com.android.externalstorage.documents/tree/0000-0000%3Atest/document/0000-0000%3Atest%2Ffoo%2FMovies%2FRR%20parking%20lot%20a%202018_02_22_075101.mp4")
-    val documentSegment = uri.pathSegments.lastOrNull()  // "0000-0000:test/foo/Movies/RR parking lot a 2018_02_22_075101.mp4"
+    val documentSegment = uri.pathSegments.lastOrNull() // "0000-0000:test/foo/Movies/RR parking lot a 2018_02_22_075101.mp4"
     if (documentSegment != null) {
-      val parentPath = documentSegment.substring(0, documentSegment.lastIndexOf('/'))  // "0000-0000:test/foo/Movies"
+      val parentPath = documentSegment.substring(0, documentSegment.lastIndexOf('/')) // "0000-0000:test/foo/Movies"
       val parentEncoded = Uri.encode(parentPath)
-      return "${uri.scheme}://${uri.authority}/tree/${parentEncoded}/document/${parentEncoded}".toUri()
+      return "${uri.scheme}://${uri.authority}/tree/$parentEncoded/document/$parentEncoded".toUri()
     }
     return null
   }

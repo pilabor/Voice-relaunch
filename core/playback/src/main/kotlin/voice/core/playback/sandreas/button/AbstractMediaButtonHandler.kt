@@ -8,11 +8,11 @@ import kotlin.time.Duration.Companion.milliseconds
 
 abstract class AbstractMediaButtonHandler(
   protected val scope: CoroutineScope,
-  protected val playingStatusCallback: (playing:Boolean?) -> Boolean,
+  protected val playingStatusCallback: (playing: Boolean?) -> Boolean,
   protected var stopCallback: () -> Unit,
   protected var clickActions: MutableList<MediaButtonHandlerClickAction> = mutableListOf(),
   protected var holdActions: MutableList<MediaButtonHandlerClickAction> = mutableListOf(),
-  ): MediaButtonHandler {
+) : MediaButtonHandler {
 
   override var handlerDelay = 1050.milliseconds
   val handlerDelayWithoutHoldSupport = 450.milliseconds
@@ -21,13 +21,12 @@ abstract class AbstractMediaButtonHandler(
 
   private var lastAction: MediaButtonHandlerClickAction? = null
 
-
   fun log(message: String) {
     Log.d("MediaButtonHandler", message)
   }
 
   protected fun keyEventToString(keyEvent: KeyEvent?): String {
-    if(keyEvent == null) {
+    if (keyEvent == null) {
       return "keyEvent is <null>"
     }
     val action = when (keyEvent.action) {
@@ -48,21 +47,27 @@ abstract class AbstractMediaButtonHandler(
     return "keyCode=$keyCode, action=$action, repeatCount=${keyEvent.repeatCount}, eventTime=${keyEvent.eventTime}, downTime=${keyEvent.downTime}"
   }
 
-  override fun addClickAction(clicks: Int, callback: () -> Unit) {
+  override fun addClickAction(
+    clicks: Int,
+    callback: () -> Unit,
+  ) {
     clickActions.add(MediaButtonHandlerClickAction(clicks, callback))
   }
 
-  override fun addHoldAction(clicksBeforeHold: Int, callback: () -> Unit) {
+  override fun addHoldAction(
+    clicksBeforeHold: Int,
+    callback: () -> Unit,
+  ) {
     holdActions.add(MediaButtonHandlerClickAction(clicksBeforeHold, callback))
   }
   fun executeHoldAction(clickCount: Int) {
     log("executeHoldAction: clickCount=$clickCount")
-    val action = holdActions.find{it -> it.clicks == clickCount}
-    if(action == null) {
+    val action = holdActions.find { it -> it.clicks == clickCount }
+    if (action == null) {
       log("executeHoldAction: no action found")
     }
     // progressive actions (like fastForward and rewind) only get called once
-    if(action?.progressive == false || action != lastAction) {
+    if (action?.progressive == false || action != lastAction) {
       action?.callback?.invoke()
     }
   }
@@ -70,8 +75,8 @@ abstract class AbstractMediaButtonHandler(
   fun executeClickAction(clickCount: Int) {
     log("executeClickAction: clickCount=$clickCount")
 
-    val action = clickActions.find{it -> it.clicks == clickCount}
-    if(action == null) {
+    val action = clickActions.find { it -> it.clicks == clickCount }
+    if (action == null) {
       log("executeClickAction: no action found")
     }
     action?.callback?.invoke()
@@ -82,7 +87,8 @@ abstract class AbstractMediaButtonHandler(
       KeyEvent.KEYCODE_HEADSETHOOK,
       KeyEvent.KEYCODE_MEDIA_PLAY,
       KeyEvent.KEYCODE_MEDIA_PAUSE,
-      KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+      KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+      -> {
         clickCount++
         log("=== handleCallMediaButton: Headset Hook/Play/ Pause, clickCount=$clickCount")
       }
@@ -102,9 +108,9 @@ abstract class AbstractMediaButtonHandler(
         buttonReleasedJob?.cancel()
         return KeyCodeResult.StopPlayback
       } else -> {
-      log("=== KeyCode:${keyEvent.keyCode}, clickCount=$clickCount")
-      return KeyCodeResult.NotHandled
-    }
+        log("=== KeyCode:${keyEvent.keyCode}, clickCount=$clickCount")
+        return KeyCodeResult.NotHandled
+      }
     }
     return KeyCodeResult.Default
   }

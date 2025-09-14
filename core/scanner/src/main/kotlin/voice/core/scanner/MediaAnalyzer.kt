@@ -108,7 +108,7 @@ internal class MediaAnalyzer(
     file: CachedDocumentFile,
     builder: Metadata.Builder,
   ) {
-    SandreasMetaVisitor.metaBuilder = builder;
+    SandreasMetaVisitor.metaBuilder = builder
     val chapters = mp4ChapterExtractor.extractChapters(file.uri)
     builder.chapters += chapters
   }

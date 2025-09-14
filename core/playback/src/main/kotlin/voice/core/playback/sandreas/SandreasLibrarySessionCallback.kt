@@ -3,12 +3,14 @@ import android.content.Intent
 import android.os.Build
 import android.view.KeyEvent
 import androidx.datastore.core.DataStore
+import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSession.ControllerInfo
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineScope
 import voice.core.data.BookId
 import voice.core.data.repo.BookRepository
 import voice.core.data.store.CurrentBookStore
-import voice.core.logging.core.Logger
+import voice.core.logging.api.Logger
 import voice.core.playback.sandreas.button.KeyDownHandler
 import voice.core.playback.sandreas.button.MediaButtonHandler
 import voice.core.playback.session.LibrarySessionCallback
@@ -17,8 +19,6 @@ import voice.core.playback.session.search.BookSearchHandler
 import voice.core.playback.session.search.BookSearchParser
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSession.ControllerInfo
 
 @Inject
 class SandreasLibrarySessionCallback(
@@ -51,10 +51,10 @@ class SandreasLibrarySessionCallback(
     // configure available TAP / CLICK codes for mediaButtonHandler
     mediaButtonHandler.addClickAction(1) {
       Logger.d("custom-action: 1 click executed")
-      if(wasPlayingBeforeSeek) {
+      if (wasPlayingBeforeSeek) {
         player.play()
         wasPlayingBeforeSeek = false
-      } else if(player.isPlaying) {
+      } else if (player.isPlaying) {
         player.pause()
       } else {
         player.play()
@@ -63,17 +63,17 @@ class SandreasLibrarySessionCallback(
     mediaButtonHandler.addClickAction(2) {
       Logger.d("custom-action: 2 clicks executed")
       player.forceSeekToNext(5.minutes)
-      if(wasPlayingBeforeSeek) {
+      if (wasPlayingBeforeSeek) {
         player.play()
-        wasPlayingBeforeSeek = false;
+        wasPlayingBeforeSeek = false
       }
     }
     mediaButtonHandler.addClickAction(3) {
       Logger.d("custom-action: 3 clicks executed")
       player.forceSeekToPrevious(5.minutes)
-      if(wasPlayingBeforeSeek) {
+      if (wasPlayingBeforeSeek) {
         player.play()
-        wasPlayingBeforeSeek = false;
+        wasPlayingBeforeSeek = false
       }
     }
     mediaButtonHandler.addClickAction(4) {
@@ -88,7 +88,7 @@ class SandreasLibrarySessionCallback(
     }
 
     mediaButtonHandler.addHoldAction(0) {
-      Logger.d("custom-action: 0 clicks + hold executed");
+      Logger.d("custom-action: 0 clicks + hold executed")
       player.seekBack(10.seconds)
     }
 
@@ -129,8 +129,12 @@ class SandreasLibrarySessionCallback(
      */
   }
 
-  override fun onMediaButtonEvent(session: MediaSession, controllerInfo: ControllerInfo, intent: Intent): Boolean {
-    if(Intent.ACTION_MEDIA_BUTTON == intent.action) {
+  override fun onMediaButtonEvent(
+    session: MediaSession,
+    controllerInfo: ControllerInfo,
+    intent: Intent,
+  ): Boolean {
+    if (Intent.ACTION_MEDIA_BUTTON == intent.action) {
       Logger.d("call onMediaButtonEvent")
 
       val keyEvent = if (Build.VERSION.SDK_INT >= 33) {

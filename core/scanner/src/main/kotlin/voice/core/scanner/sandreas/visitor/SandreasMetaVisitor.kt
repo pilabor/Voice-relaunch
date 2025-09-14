@@ -29,33 +29,36 @@ internal class SandreasMetaVisitor : AtomVisitor {
     parseOutput: Mp4ChpaterExtractorOutput,
   ) {
     val positionBeforeParsing = buffer.position
-    // val metaVersionAndFlags = buffer.readString(4)
-    buffer.position += 4
-    val parentAtom = MetaAtom("meta", buffer.position, buffer.data.size)
 
     try {
+      // val metaVersionAndFlags = buffer.readString(4)
+      buffer.position += 4
+      val parentAtom = MetaAtom("meta", buffer.position, buffer.data.size)
+
       parseAtoms(buffer, parentAtom)
+
+      if (!series.isNullOrBlank()) {
+        metaBuilder?.series = series
+      }
+      if (!part.isNullOrBlank()) {
+        metaBuilder?.part = part
+      }
+
+      if (movementIndex != null && metaBuilder?.part == null) {
+        metaBuilder?.part = movementIndex.toString()
+      }
+
     } catch (e: Exception) {
       Logger.e(e, "Could not parse atoms in SandreasMetaVisitor")
+    } finally {
+      resetParserValuesToDefaults()
+      buffer.position = positionBeforeParsing
     }
-
-    if (!series.isNullOrBlank()) {
-      metaBuilder?.series = series
-    }
-    if (!part.isNullOrBlank()) {
-      metaBuilder?.part = part
-    }
-
-    if (movementIndex != null && metaBuilder?.part == null) {
-      metaBuilder?.part = movementIndex.toString()
-    }
-
-    buffer.position = positionBeforeParsing
-    resetParserValuesToDefaults()
   }
 
   fun resetParserValuesToDefaults() {
     series = null
+    movementIndex = null
     part = null
   }
 

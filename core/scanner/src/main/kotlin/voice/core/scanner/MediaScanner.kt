@@ -25,7 +25,7 @@ internal class MediaScanner(
     val files = folders.flatMap { (folderType, files) ->
       when (folderType) {
         FolderType.SingleFile, FolderType.SingleFolder -> {
-          sandreasMediaAutoScanner.scanRoot(files) // files
+           files
         }
         FolderType.Root -> {
           files.flatMap { file ->
@@ -33,6 +33,8 @@ internal class MediaScanner(
           }
         }
         FolderType.Author -> {
+          sandreasMediaAutoScanner.scanRoot(files)
+          /*
           files.flatMap { folder ->
             folder.children.flatMap { author ->
               if (author.isFile) {
@@ -44,6 +46,7 @@ internal class MediaScanner(
               }
             }
           }
+          */
         }
       }
     }

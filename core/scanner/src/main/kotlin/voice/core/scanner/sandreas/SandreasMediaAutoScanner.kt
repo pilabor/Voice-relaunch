@@ -15,7 +15,7 @@ import voice.core.scanner.MediaAnalyzer
 import voice.core.scanner.Metadata
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
-import kotlin.time.Duration.Companion.hours
+// import kotlin.time.Duration.Companion.hours
 
 @Inject
 internal class SandreasMediaAutoScanner(private val mediaAnalyzer: MediaAnalyzer) {
@@ -55,6 +55,7 @@ internal class SandreasMediaAutoScanner(private val mediaAnalyzer: MediaAnalyzer
   }
 
   fun isAudioBook(file: CachedDocumentFile): Boolean {
+    /*
     if (file.uri.toString().endsWith("m4b")) {
       return true
     }
@@ -66,6 +67,9 @@ internal class SandreasMediaAutoScanner(private val mediaAnalyzer: MediaAnalyzer
       return false
     }
     return true
+
+     */
+    return file.uri.toString().endsWith("m4b")
   }
 
   suspend fun scanRoot(files: List<CachedDocumentFile>): List<CachedDocumentFile> {
@@ -101,9 +105,11 @@ internal class SandreasMediaAutoScanner(private val mediaAnalyzer: MediaAnalyzer
       // 2 threads to analyse metadata faster (just as an example what we could do, maybe it is not even better performance)
       repeat(2) {
         directoryPackageChannel.consumeEach { it ->
+          /*
           for (metadataFile in it.files) {
             metadataRepo.put(metadataFile.uri, mediaAnalyzer.analyze(metadataFile))
           }
+           */
           // put the finished directoryPackage into the metadataLoadedChannel
           send(it)
         }

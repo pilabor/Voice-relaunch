@@ -30,6 +30,7 @@ import voice.core.scanner.mp4.visitor.MdhdVisitor
 import voice.core.scanner.mp4.visitor.StcoVisitor
 import voice.core.scanner.mp4.visitor.StscVisitor
 import voice.core.scanner.mp4.visitor.SttsVisitor
+import voice.core.scanner.sandreas.visitor.SandreasMetaVisitor
 import java.io.File
 import kotlin.time.Duration.Companion.minutes
 
@@ -51,6 +52,7 @@ internal class MediaAnalyzerTest {
         stcoVisitor = StcoVisitor(),
         chplVisitor = ChplVisitor(),
         chapVisitor = ChapVisitor(),
+        sandreasMetaVisitor = SandreasMetaVisitor(),
       ),
       chapterTrackProcessor = ChapterTrackProcessor(),
     ),

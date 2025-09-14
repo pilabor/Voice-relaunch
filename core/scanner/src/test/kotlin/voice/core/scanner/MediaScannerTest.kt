@@ -22,6 +22,7 @@ import voice.core.data.repo.internals.AppDb
 import voice.core.data.toUri
 import voice.core.documentfile.FileBasedDocumentFactory
 import voice.core.documentfile.FileBasedDocumentFile
+import voice.core.scanner.sandreas.SandreasMediaAutoScanner
 import java.io.Closeable
 import java.io.File
 import java.nio.file.Files
@@ -208,6 +209,7 @@ class MediaScannerTest {
         fileFactory = FileBasedDocumentFactory,
       ),
       deviceHasPermissionBug = mockk(),
+      sandreasMediaAutoScanner = SandreasMediaAutoScanner(mediaAnalyzer),
     )
 
     val bookRepo = BookRepositoryImpl(chapterRepo, bookContentRepo)

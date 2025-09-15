@@ -47,7 +47,6 @@ internal class SandreasMetaVisitor : AtomVisitor {
       if (movementIndex != null && metaBuilder?.part == null) {
         metaBuilder?.part = movementIndex.toString()
       }
-
     } catch (e: Exception) {
       Logger.e(e, "Could not parse atoms in SandreasMetaVisitor")
     } finally {

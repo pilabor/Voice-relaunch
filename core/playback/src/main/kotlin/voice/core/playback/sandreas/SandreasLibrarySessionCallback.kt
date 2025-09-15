@@ -22,14 +22,14 @@ import kotlin.time.Duration.Companion.seconds
 
 @Inject
 class SandreasLibrarySessionCallback(
-  private val mediaItemProvider: MediaItemProvider,
-  private val scope: CoroutineScope,
+  mediaItemProvider: MediaItemProvider,
+  scope: CoroutineScope,
   private val player: SandreasVoicePlayer,
-  private val bookSearchParser: BookSearchParser,
-  private val bookSearchHandler: BookSearchHandler,
+  bookSearchParser: BookSearchParser,
+  bookSearchHandler: BookSearchHandler,
   @CurrentBookStore
   private val currentBookStoreId: DataStore<BookId?>,
-  private val bookRepository: BookRepository,
+  bookRepository: BookRepository,
 ) : LibrarySessionCallback(mediaItemProvider, scope, player, bookSearchParser, bookSearchHandler, currentBookStoreId, bookRepository) {
 
   private val mediaButtonHandler: MediaButtonHandler = KeyDownHandler(
@@ -90,20 +90,9 @@ class SandreasLibrarySessionCallback(
     mediaButtonHandler.addHoldAction(0) {
       Logger.d("custom-action: 0 clicks + hold executed")
       player.seekBack(10.seconds)
+      player.play()
     }
 
-    /*
-    mediaButtonHandler.addClickAction(4) {
-      Logger.d("4 clicks executed")
-      wasPlayingBeforeSeek = player.isPlaying
-      player.rewind()
-    }
-    mediaButtonHandler.addClickAction(5) {
-      Logger.d("5 clicks executed")
-      wasPlayingBeforeSeek = player.isPlaying
-      player.fastForward()
-    }
-     */
     /*
     // longPress actions would also be possible
     // - longPress will run the configured action repeatedly with a delay of 850ms unless the action is marked as "progressive" (like fastForward or rewind)

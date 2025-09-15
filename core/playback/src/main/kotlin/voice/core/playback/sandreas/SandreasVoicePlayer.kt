@@ -34,23 +34,22 @@ import kotlin.time.Duration.Companion.seconds
 @Inject
 class SandreasVoicePlayer(
   private val player: Player,
-  private val repo: BookRepository,
+  repo: BookRepository,
   @CurrentBookStore
   private val currentBookStoreId: DataStore<BookId?>,
   @SeekTimeStore
   private val seekTimeStore: DataStore<Int>,
   @AutoRewindAmountStore
   private val autoRewindAmountStore: DataStore<Int>,
-  private val mediaItemProvider: MediaItemProvider,
+  mediaItemProvider: MediaItemProvider,
   private val scope: CoroutineScope,
   private val chapterRepo: ChapterRepo,
-  private val volumeGain: VolumeGain,
-  private val sleepTimer: SleepTimer,
+  volumeGain: VolumeGain,
+  sleepTimer: SleepTimer,
 ) : VoicePlayer(player, repo, currentBookStoreId, seekTimeStore, autoRewindAmountStore, mediaItemProvider, scope, chapterRepo, volumeGain, sleepTimer) {
 
   private val THRESHOLD_FOR_BACK_SEEK_MS = 3000
-
-  val seekPlayBufferTime = 850.milliseconds
+  private val seekPlayBufferTime = 850.milliseconds
   var seekJob: Job? = null
   var isSeeking = false
 
